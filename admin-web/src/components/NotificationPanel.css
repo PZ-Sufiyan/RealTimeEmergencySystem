@@ -1,0 +1,56 @@
+.notification-panel {
+    width: 100%;
+    max-width: 400px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .notification-panel h4 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .notification-panel ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .notification-panel li {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    font-size: 1rem;
+    color: #333;
+    transition: background-color 0.3s ease;
+  }
+  
+  .notification-panel li:hover {
+    background-color: #e1e1e1;
+  }
+  
+  .notification-panel li:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .notification-panel {
+      width: 90%;
+      padding: 15px;
+    }
+  
+    .notification-panel h4 {
+      font-size: 1.2rem;
+    }
+  
+    .notification-panel li {
+      font-size: 0.9rem;
+    }
+  }
+  

@@ -1,0 +1,38 @@
+/* Agent Management Container */
+.agent-management {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Title Styling */
+  .agent-management h2 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Agent List Container */
+  .agent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .agent-management {
+      padding: 15px;
+    }
+  
+    .agent-management h2 {
+      font-size: 24px;
+    }
+  
+    .agent-list {
+      gap: 10px;
+    }
+  }
+  

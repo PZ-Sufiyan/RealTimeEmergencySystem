@@ -1,0 +1,73 @@
+/* Incident Management Container */
+.incident-management {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Title Styling */
+  .incident-management h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Incident List Container */
+  .incident-management .incident-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Styling for Individual Incident Cards */
+  .incident-management .incident-list .incident-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .incident-management .incident-list .incident-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .incident-management .incident-list .incident-card h4 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  
+  .incident-management .incident-list .incident-card p {
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+  
+  .incident-management .incident-list .incident-card span {
+    font-size: 14px;
+    color: #e74c3c;
+    font-weight: bold;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .incident-management {
+      padding: 15px;
+    }
+  
+    .incident-management h2 {
+      font-size: 20px;
+    }
+  
+    .incident-management .incident-list {
+      gap: 10px;
+    }
+  
+    .incident-management .incident-list .incident-card {
+      padding: 12px;
+    }
+  }
+  
