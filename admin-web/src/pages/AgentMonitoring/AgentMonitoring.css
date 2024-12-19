@@ -1,0 +1,56 @@
+.agent-monitoring {
+  padding: 20px;
+}
+
+.agent-monitoring h1 {
+  margin-bottom: 20px;
+}
+
+.map {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.map-placeholder {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  color: #666;
+  font-size: 16px;
+}
+
+.agent-list {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.agent-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.agent-list table th, .agent-list table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.agent-list table th {
+  background-color: #2a3f54;
+  color: white;
+}
+
+.agent-list table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.agent-list table tr:hover {
+  background-color: #f1f1f1;
+}

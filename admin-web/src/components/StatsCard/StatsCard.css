@@ -1,0 +1,17 @@
+.stats-card {
+    border: 1px solid #007bff;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px;
+    background-color: #e7f3ff;
+    text-align: center;
+  }
+  .stats-card h3 {
+    margin: 0;
+    color: #007bff;
+  }
+  .stats-card p {
+    margin: 8px 0;
+    font-size: 1.5em;
+    color: #333;
+  }
