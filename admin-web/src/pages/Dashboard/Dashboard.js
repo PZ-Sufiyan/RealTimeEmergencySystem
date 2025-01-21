@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -8,11 +9,13 @@ function Dashboard() {
     pending: 5,
   });
 
-  const incidents = [
-    { id: 1, type: "Fire", location: "123 Main St", time: "2024-12-19 10:00 AM", priority: "High" },
-    { id: 2, type: "Medical", location: "456 Elm St", time: "2024-12-19 11:00 AM", priority: "Medium" },
-    { id: 3, type: "Police", location: "789 Oak St", time: "2024-12-19 12:00 PM", priority: "Low" },
-  ];
+  const [incidents, setIncidents] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://your-django-backend-url/api/incidents/")
+      .then(response => setIncidents(response.data))
+      .catch(error => console.error(error));
+  }, []);
 
   return (
     <div className="dashboard">
@@ -56,3 +59,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
