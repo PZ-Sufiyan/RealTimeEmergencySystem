@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+firebase-admin
+googlemaps
+requests
+python-multipart

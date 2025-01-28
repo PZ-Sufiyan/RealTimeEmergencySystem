@@ -17,22 +17,10 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard .map {
-  background-color: #f4f4f4;
-  padding: 20px;
+.dashboard #map {
+  height: 400px; /* Set a fixed height */
   border-radius: 8px;
   margin-bottom: 20px;
-}
-
-.dashboard .map-placeholder {
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  color: #666;
-  font-size: 16px;
 }
 
 .dashboard .recent-incidents {
@@ -47,7 +35,8 @@
   margin-top: 10px;
 }
 
-.dashboard table th, .dashboard table td {
+.dashboard table th,
+.dashboard table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;

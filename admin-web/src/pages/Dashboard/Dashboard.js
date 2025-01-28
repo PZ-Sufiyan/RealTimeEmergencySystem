@@ -1,20 +1,55 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, onValue } from "firebase/database";
 import "./Dashboard.css";
 
-function Dashboard() {
-  const [stats, setStats] = useState({
-    active: 10,
-    resolved: 25,
-    pending: 5,
-  });
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyCuKvOfI3PU7PBDkAOK-3zFTiriJUOhyTQ",
+  authDomain: "elisasentry.firebaseapp.com",
+  databaseURL: "https://elisasentry.firebaseio.com",
+  projectId: "elisasentry",
+  storageBucket: "elisasentry.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdefghij"
+};
 
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+
+function Dashboard() {
+  const [stats, setStats] = useState({ active: 0, resolved: 0, pending: 0 });
   const [incidents, setIncidents] = useState([]);
 
   useEffect(() => {
-    axios.get("http://your-django-backend-url/api/incidents/")
-      .then(response => setIncidents(response.data))
-      .catch(error => console.error(error));
+    const db = getDatabase(firebaseApp);
+    const incidentsRef = ref(db, "incidents");
+
+    onValue(incidentsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setIncidents(Object.values(data));
+        setStats({
+          active: data.filter((incident) => incident.status === "Active").length,
+          resolved: data.filter((incident) => incident.status === "Resolved").length,
+          pending: data.filter((incident) => incident.status === "Pending").length,
+        });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCuKvOfI3PU7PBDkAOK-3zFTiriJUOhyTQ&libraries=places`;
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      const map = new window.google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.7749, lng: -122.4194 }, // Set a default center (San Francisco for example)
+        zoom: 10,
+      });
+    };
   }, []);
 
   return (
@@ -25,10 +60,7 @@ function Dashboard() {
         <div className="stat">Resolved: {stats.resolved}</div>
         <div className="stat">Pending: {stats.pending}</div>
       </div>
-      <div className="map">
-        <h2>Real-Time Map</h2>
-        <div className="map-placeholder">Map Placeholder (Integrate map here)</div>
-      </div>
+      <div id="map" className="map"></div>
       <div className="recent-incidents">
         <h2>Recent Incidents</h2>
         <table>
@@ -59,4 +91,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
