@@ -15,22 +15,10 @@
 .search-box {
   width: 300px;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #3498db;
   border-radius: 4px;
-}
-
-.control-button {
-  background-color: #1abc9c;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
   font-size: 14px;
-}
-
-.control-button:hover {
-  background-color: #16a085;
+  outline: none;
 }
 
 .incident-table {
@@ -38,9 +26,10 @@
   border-collapse: collapse;
 }
 
-.incident-table th, .incident-table td {
+.incident-table th,
+.incident-table td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
   text-align: left;
 }
 
@@ -55,4 +44,31 @@
 
 .incident-table tr:hover {
   background-color: #f1f1f1;
+}
+
+/* Assign Agent Dropdown */
+select {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Resolved Text */
+.resolved-text {
+  color: green;
+  font-weight: bold;
+}
+
+/* Resolve Button */
+.resolve-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.resolve-button:hover {
+  background-color: #c0392b;
 }

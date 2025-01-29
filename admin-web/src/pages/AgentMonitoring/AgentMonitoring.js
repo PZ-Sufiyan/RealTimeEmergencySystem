@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./AgentMonitoring.css";
+import Agent_Modal from "../../components/Modals/Agent_Modal";
 
-// Sample agent data (can be replaced with live data from an API or Firebase)
 const sampleAgents = [
-  { id: 1, name: "Agent A", lat: 37.7749, lng: -122.4194, status: "Online" }, // San Francisco
-  { id: 2, name: "Agent B", lat: 34.0522, lng: -118.2437, status: "Offline" }, // Los Angeles
-  { id: 3, name: "Agent C", lat: 40.7128, lng: -74.006, status: "Online" }, // New York
+  { id: 1, name: "Agent A", email: "agentA@example.com", contact: "123-456-7890", password: "agent@123", lat: 37.7749, lng: -122.4194, status: "Online" },
+  { id: 2, name: "Agent B", email: "agentB@example.com", contact: "987-654-3210", password: "agent@456", lat: 34.0522, lng: -118.2437, status: "Offline" },
+  { id: 3, name: "Agent C", email: "agentC@example.com", contact: "555-666-7777", password: "agent@789", lat: 40.7128, lng: -74.006, status: "Online" },
 ];
 
 function AgentMonitoring() {
   const [agents, setAgents] = useState(sampleAgents);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState(null);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -19,7 +21,7 @@ function AgentMonitoring() {
 
     script.onload = () => {
       const map = new window.google.maps.Map(document.getElementById("agent-map"), {
-        center: { lat: 39.8283, lng: -98.5795 }, // Center of the USA
+        center: { lat: 39.8283, lng: -98.5795 },
         zoom: 4,
       });
 
@@ -40,7 +42,10 @@ function AgentMonitoring() {
       <h1>Agent Monitoring</h1>
       <div id="agent-map" className="map"></div>
       <div className="agent-list">
-        <h2>Agent List</h2>
+        <div className="agentList-header">
+          <h2>Agent List</h2>
+          <button onClick={() => setIsOpen(true)} className="addAgent-btn">New Agent</button>
+        </div>
         <table>
           <thead>
             <tr>
@@ -48,6 +53,7 @@ function AgentMonitoring() {
               <th>Name</th>
               <th>Status</th>
               <th>Location</th>
+              <th>View Details</th>
             </tr>
           </thead>
           <tbody>
@@ -56,14 +62,35 @@ function AgentMonitoring() {
                 <td>{agent.id}</td>
                 <td>{agent.name}</td>
                 <td>{agent.status}</td>
+                <td>{agent.lat.toFixed(2)}, {agent.lng.toFixed(2)}</td>
                 <td>
-                  {agent.lat.toFixed(2)}, {agent.lng.toFixed(2)}
+                  <button className="view-button" onClick={() => setSelectedAgent(agent)}>View Details</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* View Details Popup */}
+      {selectedAgent && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={() => setSelectedAgent(null)}>
+              &times;
+            </span>
+            <h2>Agent Details</h2>
+            <p><strong>Name:</strong> {selectedAgent.name}</p>
+            <p><strong>Email:</strong> {selectedAgent.email}</p>
+            <p><strong>Contact:</strong> {selectedAgent.contact}</p>
+            <p><strong>Password:</strong> {selectedAgent.password}</p>
+            <p><strong>Location:</strong> {selectedAgent.lat.toFixed(2)}, {selectedAgent.lng.toFixed(2)}</p>
+            <p><strong>Status:</strong> {selectedAgent.status}</p>
+          </div>
+        </div>
+      )}
+
+      <Agent_Modal isOpen={isOpen} setIsOpen={setIsOpen} setAgents={setAgents} />
     </div>
   );
 }

@@ -1,0 +1,40 @@
+.container{
+    width: 90%;
+    margin: auto;
+    margin-top: 2rem;
+}
+
+.inputDiv{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+
+.inputDiv input, .addBtn{
+    padding: 10px;
+    outline: none;
+    border: none;
+    background-color: rgba(206, 205, 205, 0.251);
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+.inputDiv input{
+    background-color: rgba(206, 205, 205, 0.251);
+
+}
+.addBtn{
+    width: 100%;
+    background-color: teal;
+    color: white;
+    transition: all 0.2s eas;
+    cursor: pointer;
+}
+
+.addBtn:hover{
+    background-color: rgb(8, 149, 149);
+
+
+}

@@ -19,7 +19,9 @@ function Sidebar() {
           <NavLink
             key={item.path}
             to={item.path}
-            className={({ isActive }) => (isActive ? "sidebar-link active" : "sidebar-link")}
+            className={({ isActive }) =>
+              isActive ? "sidebar-link active" : "sidebar-link"
+            }
           >
             <span className="sidebar-icon">{item.icon}</span>
             <span className="sidebar-label">{item.label}</span>
