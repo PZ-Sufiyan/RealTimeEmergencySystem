@@ -1,41 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import axios from "axios";
 import "./Dashboard.css";
-
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyCuKvOfI3PU7PBDkAOK-3zFTiriJUOhyTQ",
-  authDomain: "elisasentry.firebaseapp.com",
-  databaseURL: "https://elisasentry.firebaseio.com",
-  projectId: "elisasentry",
-  storageBucket: "elisasentry.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdefghij"
-};
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
 
 function Dashboard() {
   const [stats, setStats] = useState({ active: 0, resolved: 0, pending: 0 });
   const [incidents, setIncidents] = useState([]);
 
   useEffect(() => {
-    const db = getDatabase(firebaseApp);
-    const incidentsRef = ref(db, "incidents");
+    const fetchIncidents = async () => {
+      try {
+        const response = await axios.get("http://192.168.1.7:8000/incidents/");
+        if (response.data && response.data.incidents) {
+          const allIncidents = Object.values(response.data.incidents);
 
-    onValue(incidentsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setIncidents(Object.values(data));
-        setStats({
-          active: data.filter((incident) => incident.status === "Active").length,
-          resolved: data.filter((incident) => incident.status === "Resolved").length,
-          pending: data.filter((incident) => incident.status === "Pending").length,
-        });
+          // Calculate stats
+          const activeCount = allIncidents.filter(
+            (incident) => incident.status === "Unresolved" && incident.assigned_agent !== "N/A"
+          ).length;
+          const resolvedCount = allIncidents.filter(
+            (incident) => incident.status === "Resolved"
+          ).length;
+          const pendingCount = allIncidents.filter(
+            (incident) => incident.status === "Unresolved" && incident.assigned_agent === "N/A"
+          ).length;
+
+          setStats({ active: activeCount, resolved: resolvedCount, pending: pendingCount });
+
+          // Sort incidents by time in descending order (most recent first)
+          const sortedIncidents = allIncidents.sort((a, b) => new Date(b.time) - new Date(a.time));
+          setIncidents(sortedIncidents);
+        }
+      } catch (error) {
+        console.error("Error fetching incidents:", error);
       }
-    });
+    };
+
+    fetchIncidents();
   }, []);
 
   useEffect(() => {
@@ -46,11 +46,28 @@ function Dashboard() {
 
     script.onload = () => {
       const map = new window.google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.7749, lng: -122.4194 }, // Set a default center (San Francisco for example)
+        center: { lat: 37.7749, lng: -122.4194 }, // Default center (San Francisco)
         zoom: 10,
       });
+
+      // Add markers for each incident
+      incidents.forEach((incident) => {
+        if (incident.location && incident.location.latitude && incident.location.longitude) {
+          new window.google.maps.Marker({
+            position: {
+              lat: parseFloat(incident.location.latitude),
+              lng: parseFloat(incident.location.longitude),
+            },
+            map: map,
+            title: `Incident: ${incident.type}`,
+            icon: {
+              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Red marker icon
+            },
+          });
+        }
+      });
     };
-  }, []);
+  }, [incidents]); // Re-run the map when incidents are updated
 
   return (
     <div className="dashboard">
@@ -60,7 +77,7 @@ function Dashboard() {
         <div className="stat">Resolved: {stats.resolved}</div>
         <div className="stat">Pending: {stats.pending}</div>
       </div>
-      <div id="map" className="map"></div>
+      <div id="map" className="map" style={{ height: "500px", width: "100%" }}></div>
       <div className="recent-incidents">
         <h2>Recent Incidents</h2>
         <table>
@@ -71,18 +88,32 @@ function Dashboard() {
               <th>Location</th>
               <th>Time</th>
               <th>Priority</th>
+              <th>Status</th>
+              <th>Assigned Agent</th>
             </tr>
           </thead>
           <tbody>
-            {incidents.map((incident) => (
-              <tr key={incident.id}>
-                <td>{incident.id}</td>
-                <td>{incident.type}</td>
-                <td>{incident.location}</td>
-                <td>{incident.time}</td>
-                <td>{incident.priority}</td>
+            {incidents.length > 0 ? (
+              incidents.map((incident, index) => (
+                <tr key={index}>
+                  <td>{incident.id || "N/A"}</td>
+                  <td>{incident.type || "N/A"}</td>
+                  <td>
+                    {incident.location
+                      ? `${incident.location.latitude}, ${incident.location.longitude}`
+                      : "N/A"}
+                  </td>
+                  <td>{incident.time || "N/A"}</td>
+                  <td>{incident.priority || "N/A"}</td>
+                  <td>{incident.status || "N/A"}</td>
+                  <td>{incident.assigned_agent || "N/A"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7">No incidents found.</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

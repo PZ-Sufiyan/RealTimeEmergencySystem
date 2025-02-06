@@ -1,64 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./UserManagement.css";
 
 function UserManagement() {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "johndoe@example.com",
-      phone: "123-456-7890",
-      emergencyContacts: [
-        { name: "James Doe", phone: "987-654-3210" },
-        { name: "Sarah Doe", phone: "456-789-1230" },
-      ],
-      password: "john@123",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "janesmith@example.com",
-      phone: "987-654-3210",
-      emergencyContacts: [
-        { name: "Emily Smith", phone: "654-321-0987" },
-        { name: "Michael Smith", phone: "789-456-1235" },
-      ],
-      password: "jane@456",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      email: "alicejohnson@example.com",
-      phone: "555-666-7777",
-      emergencyContacts: [
-        { name: "Mark Johnson", phone: "321-654-9870" },
-        { name: "Olivia Johnson", phone: "555-123-6789" },
-      ],
-      password: "alice@789",
-      status: "Active",
-    },
-  ]);
-
+  const [users, setUsers] = useState([]); // Initialize as an empty array
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const toggleStatus = (id) => {
+  // Fetch users from Firebase on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://192.168.1.7:8000/type_users"); // Change URL as needed
+        if (response.data && response.data.users) {
+          setUsers(Object.values(response.data.users)); // Ensure users is an array
+        } else {
+          setUsers([]); // Fallback to an empty array if no users are found
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setUsers([]); // Fallback to an empty array in case of an error
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Toggle user status between Active/Inactive
+  // Toggle user status between Active/Inactive and update the API
+const toggleStatus = async (id, currentStatus) => {
+  const newStatus = currentStatus === "active" ? "inactive" : "active";
+  
+  try {
+    // Call the API to update the status
+    await axios.post("http://192.168.1.7:8000/update-user-status", {
+      user_id: id,
+      status: newStatus,
+    });
+
+    // Update the local state after a successful API call
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === "Active" ? "Inactive" : "Active" }
-          : user
+        user.id === id ? { ...user, status: newStatus } : user
       )
     );
-  };
+    console.log(`Status updated to ${newStatus} for user with ID: ${id}`);
+  } catch (error) {
+    console.error("Error updating status:", error);
+    alert("Failed to update status. Please try again.");
+  }
+};
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm)
+
+  // Filter users based on the search term
+  const filteredUsers = users.filter((user) =>
+    [user.name, user.email, user.phone]
+      .some(field => field?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -90,31 +87,38 @@ function UserManagement() {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.phone}</td>
-              <td>{user.status}</td>
-              <td>
-                <button
-                  className="status-button"
-                  onClick={() => toggleStatus(user.id)}
-                >
-                  {user.status === "Active" ? "Deactivate" : "Activate"}
-                </button>
-              </td>
-              <td>
-                <button
-                  className="view-button"
-                  onClick={() => setSelectedUser(user)}
-                >
-                  View Details
-                </button>
-              </td>
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user, index) => (
+              <tr key={index}>
+                <td>{user.id || "N/A"}</td>
+                <td>{user.name || "N/A"}</td>
+                <td>{user.email || "N/A"}</td>
+                <td>{user.phone || "N/A"}</td>
+                <td>{user.status || "inactive"}</td>
+                <td>
+  <button
+    className="status-button"
+    onClick={() => toggleStatus(user.id, user.status)}
+  >
+    {user.status === "active" ? "Deactivate" : "Activate"}
+  </button>
+</td>
+
+                <td>
+                  <button
+                    className="view-button"
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7">No users found.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -127,17 +131,17 @@ function UserManagement() {
             </span>
             <h2>User Details</h2>
             <div className="user-details">
-              <p><strong>Name:</strong> {selectedUser.name}</p>
-              <p><strong>Email:</strong> {selectedUser.email}</p>
-              <p><strong>Phone:</strong> {selectedUser.phone}</p>
-              <p><strong>Password:</strong> {selectedUser.password}</p>
+              <p><strong>Name:</strong> {selectedUser.name || "N/A"}</p>
+              <p><strong>Email:</strong> {selectedUser.email || "N/A"}</p>
+              <p><strong>Phone:</strong> {selectedUser.phone || "N/A"}</p>
+              <p><strong>Status:</strong> {selectedUser.status || "N/A"}</p>
               <h3>Emergency Contacts</h3>
               <ul className="emergency-contact-list">
-                {selectedUser.emergencyContacts.map((contact, index) => (
+                {selectedUser.emergencyContacts?.map((contact, index) => (
                   <li key={index}>
-                    <strong>{contact.name}:</strong> {contact.phone}
+                    <strong>{contact.name || "N/A"}:</strong> {contact.phone || "N/A"}
                   </li>
-                ))}
+                )) || <li>No emergency contacts available.</li>}
               </ul>
             </div>
           </div>

@@ -1,17 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
 import "./AgentMonitoring.css";
 import Agent_Modal from "../../components/Modals/Agent_Modal";
 
-const sampleAgents = [
-  { id: 1, name: "Agent A", email: "agentA@example.com", contact: "123-456-7890", password: "agent@123", lat: 37.7749, lng: -122.4194, status: "Online" },
-  { id: 2, name: "Agent B", email: "agentB@example.com", contact: "987-654-3210", password: "agent@456", lat: 34.0522, lng: -118.2437, status: "Offline" },
-  { id: 3, name: "Agent C", email: "agentC@example.com", contact: "555-666-7777", password: "agent@789", lat: 40.7128, lng: -74.006, status: "Online" },
-];
-
 function AgentMonitoring() {
-  const [agents, setAgents] = useState(sampleAgents);
+  const [agents, setAgents] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await axios.get("http://192.168.1.7:8000/agents");
+        if (response.data && response.data.agents) {
+          setAgents(Object.values(response.data.agents));
+        }
+      } catch (error) {
+        console.error("Error fetching agents:", error);
+      }
+    };
+    fetchAgents();
+  }, []);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -20,31 +31,54 @@ function AgentMonitoring() {
     document.body.appendChild(script);
 
     script.onload = () => {
-      const map = new window.google.maps.Map(document.getElementById("agent-map"), {
-        center: { lat: 39.8283, lng: -98.5795 },
-        zoom: 4,
+      mapRef.current = new window.google.maps.Map(document.getElementById("agent-map"), {
+        center: { lat: 37.7749, lng: -122.4194 }, // Default center
+        zoom: 10,
       });
-
-      agents.forEach((agent) => {
-        if (agent.status === "Online") {
-          new window.google.maps.Marker({
-            position: { lat: agent.lat, lng: agent.lng },
-            map: map,
-            title: agent.name,
-          });
-        }
-      });
+      updateMarkers();
     };
+  }, []);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      updateMarkers();
+    }
   }, [agents]);
+
+  const updateMarkers = () => {
+    if (!mapRef.current) return;
+
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    agents.forEach((agent) => {
+      if (agent.location && agent.location.latitude && agent.location.longitude) {
+        const marker = new window.google.maps.Marker({
+          position: {
+            lat: parseFloat(agent.location.latitude),
+            lng: parseFloat(agent.location.longitude),
+          },
+          map: mapRef.current,
+          title: `Agent: ${agent.name}`,
+          icon: {
+            url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          },
+        });
+        markersRef.current.push(marker);
+      }
+    });
+  };
 
   return (
     <div className="agent-monitoring">
       <h1>Agent Monitoring</h1>
-      <div id="agent-map" className="map"></div>
+      <div id="agent-map" className="map" style={{ height: "500px", width: "100%" }}></div>
       <div className="agent-list">
         <div className="agentList-header">
           <h2>Agent List</h2>
-          <button onClick={() => setIsOpen(true)} className="addAgent-btn">New Agent</button>
+          <button onClick={() => setIsOpen(true)} className="addAgent-btn">
+            New Agent
+          </button>
         </div>
         <table>
           <thead>
@@ -52,6 +86,8 @@ function AgentMonitoring() {
               <th>ID</th>
               <th>Name</th>
               <th>Status</th>
+              <th>Email</th>
+              <th>Phone</th>
               <th>Location</th>
               <th>View Details</th>
             </tr>
@@ -62,17 +98,26 @@ function AgentMonitoring() {
                 <td>{agent.id}</td>
                 <td>{agent.name}</td>
                 <td>{agent.status}</td>
-                <td>{agent.lat.toFixed(2)}, {agent.lng.toFixed(2)}</td>
+                <td>{agent.email}</td>
+                <td>{agent.phone}</td>
                 <td>
-                  <button className="view-button" onClick={() => setSelectedAgent(agent)}>View Details</button>
+                  {agent.location.latitude && agent.location.longitude
+                    ? `${agent.location.latitude}, ${agent.location.longitude}`
+                    : "N/A"}
+                </td>
+                <td>
+                  <button
+                    className="view-button"
+                    onClick={() => setSelectedAgent(agent)}
+                  >
+                    View Details
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* View Details Popup */}
       {selectedAgent && (
         <div className="modal">
           <div className="modal-content">
@@ -82,14 +127,16 @@ function AgentMonitoring() {
             <h2>Agent Details</h2>
             <p><strong>Name:</strong> {selectedAgent.name}</p>
             <p><strong>Email:</strong> {selectedAgent.email}</p>
-            <p><strong>Contact:</strong> {selectedAgent.contact}</p>
-            <p><strong>Password:</strong> {selectedAgent.password}</p>
-            <p><strong>Location:</strong> {selectedAgent.lat.toFixed(2)}, {selectedAgent.lng.toFixed(2)}</p>
+            <p><strong>Contact:</strong> {selectedAgent.phone}</p>
+            <p><strong>Location:</strong>
+              {selectedAgent.location.latitude && selectedAgent.location.longitude
+                ? `${selectedAgent.location.latitude}, ${selectedAgent.location.longitude}`
+                : "N/A"}
+            </p>
             <p><strong>Status:</strong> {selectedAgent.status}</p>
           </div>
         </div>
       )}
-
       <Agent_Modal isOpen={isOpen} setIsOpen={setIsOpen} setAgents={setAgents} />
     </div>
   );
