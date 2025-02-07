@@ -31,7 +31,7 @@ const Analytics = () => {
   // Fetch incident data
   const fetchIncidents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.7:8000/incidents");
+      const response = await axios.get("http://192.168.1.115:8000/incidents");
       const incidentData = response.data.incidents || {};
       setIncidents(Object.values(incidentData));
     } catch (error) {
@@ -42,7 +42,7 @@ const Analytics = () => {
   // Fetch agents data
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.7:8000/agents");
+      const response = await axios.get("http://192.168.1.115:8000/agents");
       const agentData = response.data.agents || {};
       setAgents(Object.values(agentData));
     } catch (error) {

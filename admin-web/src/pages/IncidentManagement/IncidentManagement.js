@@ -13,7 +13,7 @@ function IncidentManagement() {
 
   const fetchIncidents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.7:8000/incidents/");
+      const response = await axios.get("http://192.168.1.115:8000/incidents/");
       const data = response.data.incidents;
       const unresolvedIncidents = Object.values(data).filter(
         (incident) => incident.status === "Unresolved"
@@ -26,7 +26,7 @@ function IncidentManagement() {
 
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.7:8000/agents");
+      const response = await axios.get("http://192.168.1.115:8000/agents");
       const allAgents = Object.values(response.data.agents);
       setAssignAgents(allAgents);
       const assignAgentMap = allAgents.reduce((map, agent) => {
@@ -57,13 +57,13 @@ function IncidentManagement() {
   const assignAgent = async (incidentId, agentId) => {
     try {
       // Make a POST request to update the assigned agent in the database
-      await axios.post("http://192.168.1.7:8000/assign-agent", {
+      await axios.post("http://192.168.1.115:8000/assign-agent", {
         incident_id: incidentId,
         assigned_agent: agentId, // Use agent_id here
       });
 
       // Update agent status to "occupied"
-      await axios.post("http://192.168.1.7:8000/update-agent-status", {
+      await axios.post("http://192.168.1.115:8000/update-agent-status", {
         agent_id: agentId, // Use agent_id here
         status: "occupied",
       });
@@ -85,7 +85,7 @@ function IncidentManagement() {
   const markResolved = async (incidentId) => {
     try {
       // Make a POST request to update the status in the database
-      await axios.post("http://192.168.1.7:8000/update-status", {
+      await axios.post("http://192.168.1.115:8000/update-status", {
         incident_id: incidentId,
         status: "Resolved",
       });
@@ -103,7 +103,7 @@ function IncidentManagement() {
 
       // If the incident had an agent, update their status back to "online"
       if (assignedAgentId) {
-        await axios.post("http://192.168.1.7:8000/update-agent-status", {
+        await axios.post("http://192.168.1.115:8000/update-agent-status", {
           agent_id: assignedAgentId, // Use agent_id here
           status: "online",
         });

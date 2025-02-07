@@ -47,11 +47,11 @@ const Agent_Modal = ({ isOpen, setIsOpen, setAgents }) => {
         },
       };
 
-      const response = await axios.post('http://192.168.1.7:8000/signup', requestData);
+      const response = await axios.post('http://192.168.1.9:8000/signup', requestData);
       console.log('Agent added successfully:', response.data);
 
       // Fetch updated agent list
-      const updatedAgents = await axios.get("http://192.168.1.7:8000/agents");
+      const updatedAgents = await axios.get("http://192.168.1.9:8000/agents");
       setAgents(Object.values(updatedAgents.data.agents));
 
       // Reset form data and close modal

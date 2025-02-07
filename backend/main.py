@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from firebase_admin import messaging
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +11,9 @@ from pydantic import BaseModel
 from datetime import datetime
 import uuid
 import traceback
+from geopy.distance import geodesic
+
+
 
 # Check if Firebase is already initialized
 def get_firebase_app():
@@ -51,37 +54,122 @@ class UserSignin(BaseModel):
     email: str
     password: str
 
+
+
 class IncidentReport(BaseModel):
     type: str
     location: Location
+    user_id: str
     time: str
     priority: str
-    assigned_agent: str = "N/A"
-    status: str = "Unresolved"
+    assigned_agent: str
+    status: str
 
+
+# Report an incident
 @app.post("/report-incident")
 async def report_incident(incident: IncidentReport):
     try:
-        # Create unique incident ID
+        ref = db.reference("incidents")
         incident_id = str(uuid.uuid4())
-        
-        # Get the incident data
         incident_data = {
             "id": incident_id,
             "type": incident.type,
-            "location": incident.location.dict(),
+            "location": {
+                "latitude": incident.location.latitude,
+                "longitude": incident.location.longitude,
+            },
+            "user_id": incident.user_id,
             "time": incident.time,
             "priority": incident.priority,
             "assigned_agent": incident.assigned_agent,
-            "status": incident.status
+            "status": incident.status,
         }
+        ref.child(incident_id).set(incident_data)
 
-        # Store the incident in Firebase Realtime Database
-        db.reference(f"incidents/{incident_id}").set(incident_data)
-
-        return {"message": "Incident reported successfully", "incident": incident_data}
+        return {"message": "Incident reported successfully", "incident_id": incident_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error reporting incident: {e}")
+
+# Get nearby unresolved incidents for a specific user
+@app.get("/incidents/nearby")
+async def get_nearby_incidents(user_id: str, latitude: float, longitude: float):
+    try:
+        # Get reference to the incidents path in Firebase
+        ref = db.reference("incidents")
+        
+        # Fetch unresolved incidents for the user and within 50-meter radius
+        all_incidents = ref.order_by_child("status").equal_to("Unresolved").get()
+
+        nearby_incidents = []
+        if all_incidents:
+            for incident_id, incident_data in all_incidents.items():
+                if incident_data.get("user_id") == user_id:  # Ensure we're checking for the correct user
+                    incident_lat = incident_data["location"]["latitude"]
+                    incident_lon = incident_data["location"]["longitude"]
+                    incident_coords = (incident_lat, incident_lon)
+                    user_coords = (latitude, longitude)
+
+                    # Check if the incident is within a 50 meter radius
+                    distance = geodesic(user_coords, incident_coords).meters
+                    if distance <= 50:
+                        incident_data["id"] = incident_id
+                        nearby_incidents.append(incident_data)
+
+        return {"message": "Nearby incidents retrieved successfully", "incidents": nearby_incidents}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching nearby incidents: {str(e)}")
+
+# Resolve (or cancel) an incident
+@app.put("/incidents/{incident_id}/resolve")
+async def resolve_incident(incident_id: str):
+    try:
+        ref = db.reference(f"incidents/{incident_id}")
+        incident_data = ref.get()
+
+        if not incident_data:
+            raise HTTPException(status_code=404, detail="Incident not found.")
+
+        # Update the incident status to "Resolved"
+        ref.update({"status": "Resolved"})
+
+        return {"message": "Incident has been resolved successfully."}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resolving incident: {e}")
+
+# class IncidentReport(BaseModel):
+#     type: str
+#     location: Location
+#     time: str
+#     priority: str
+#     assigned_agent: str = "N/A"
+#     status: str = "Unresolved"
+
+# @app.post("/report-incident")
+# async def report_incident(incident: IncidentReport):
+#     try:
+#         # Create unique incident ID
+#         incident_id = str(uuid.uuid4())
+        
+#         # Get the incident data
+#         incident_data = {
+#             "id": incident_id,
+#             "type": incident.type,
+#             "location": incident.location.dict(),
+#             "time": incident.time,
+#             "priority": incident.priority,
+#             "assigned_agent": incident.assigned_agent,
+#             "status": incident.status
+#         }
+
+#         # Store the incident in Firebase Realtime Database
+#         db.reference(f"incidents/{incident_id}").set(incident_data)
+
+#         return {"message": "Incident reported successfully", "incident": incident_data}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 # @app.get("/incidents/")
 # async def get_all_incidents():

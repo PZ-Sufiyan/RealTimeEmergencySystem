@@ -9,7 +9,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const response = await axios.get("http://192.168.1.7:8000/incidents/");
+        const response = await axios.get("http://192.168.1.115:8000/incidents/");
         if (response.data && response.data.incidents) {
           const allIncidents = Object.values(response.data.incidents);
 
