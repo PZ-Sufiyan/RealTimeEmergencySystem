@@ -2,9 +2,9 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-function Sidebar() {
+function Sidebar({ onSignOut }) {
   const navItems = [
-    { path: "/", label: "Dashboard", icon: "🏠" },
+    { path: "/dashboard", label: "Dashboard", icon: "🏠" },
     { path: "/incidents", label: "Incidents", icon: "⚠" },
     { path: "/agents", label: "Agents", icon: "👮" },
     { path: "/users", label: "Users", icon: "👤" },
@@ -28,6 +28,9 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      <button className="signout-button" onClick={onSignOut}>
+        🚪 Sign Out
+      </button>
     </div>
   );
 }

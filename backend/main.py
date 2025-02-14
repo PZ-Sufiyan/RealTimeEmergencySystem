@@ -12,13 +12,15 @@ from datetime import datetime
 import uuid
 import traceback
 from geopy.distance import geodesic
+from twilio.rest import Client
+
 
 
 
 # Check if Firebase is already initialized
 def get_firebase_app():
     if not firebase_admin._apps:  # Check if Firebase is already initialized
-        cred = credentials.Certificate("C:\\Users\\sufik\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\elisasentry-firebase-adminsdk.json")
+        cred = credentials.Certificate("C:\\Users\\sufik\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\firebase\\service-account.json")
         firebase_admin.initialize_app(cred, {
             'databaseURL': "https://elisasentry-default-rtdb.asia-southeast1.firebasedatabase.app"
         })
@@ -39,6 +41,68 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers.
 )
 
+# Define request model
+class UserNotificationRequest(BaseModel):
+    fcm_token: str
+    itype: str  # Incident type
+    location: str  # Changed from str to float
+
+@app.post("/send-notification-agent/")
+async def send_notification(request: UserNotificationRequest):
+    try:
+        # Create Firebase message
+        message = messaging.Message(
+            token=request.fcm_token,
+            notification=messaging.Notification(
+                title="New Incident Assigned",
+                body=f"You have been assigned to a new incident: {request.itype} \n"
+                     f"Location: {request.location}. \n"
+                     f"Check your app for details.",
+            ),
+            data={"itype": request.itype},  # Use request.itype
+        )
+
+        # Send message
+        response = messaging.send(message)
+        return {"success": True, "message_id": response}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class AgentNotificationRequest(BaseModel):
+    fcm_token: str
+    agentName: str  # Incident type
+    agentContact: str  # Changed from str to float
+
+@app.post("/send-notification-user/")
+async def send_notification(request: AgentNotificationRequest):
+    try:
+        # Create Firebase message
+        message = messaging.Message(
+            token=request.fcm_token,
+            notification=messaging.Notification(
+                title="Agent Assigned",
+                body=f"Your Agent has been assigned.\n"
+                     f"Name: {request.agentName}. \n"
+                     f"Contact Number: {request.agentContact}.",
+            ),
+            data={"agentName": request.agentName},  # Use request.itype
+        )
+
+        # Send message
+        response = messaging.send(message)
+        return {"success": True, "message_id": response}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class SmsRequest(BaseModel):
+    to_number: str
+    message: str
+
+
+
 class Location(BaseModel):
     latitude: float
     longitude: float
@@ -55,7 +119,42 @@ class UserSignin(BaseModel):
     password: str
 
 
+class SignInRequest(BaseModel):
+    email: str
+    password: str
 
+class FCMTokenRequest(BaseModel):
+    email: str
+    fcmToken: str
+
+@app.post("/api/signin")
+async def sign_in(request: SignInRequest):
+    try:
+        user = auth.get_user_by_email(request.email)
+        token = auth.create_custom_token(user.uid)
+        return {"token": token}  # Removed decode
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+
+
+@app.post("/api/store-fcm-token")
+async def store_fcm_token(request: FCMTokenRequest):
+    try:
+        user = auth.get_user_by_email(request.email)
+        user_id = user.uid
+        
+        # Store FCM token in Realtime Database
+        ref = db.reference(f'users/{user_id}')
+        ref.set({
+            'email': request.email,
+            'id': user_id,
+            'fcmToken': request.fcmToken
+        })
+        return {"message": "FCM token stored successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+        
 class IncidentReport(BaseModel):
     type: str
     location: Location

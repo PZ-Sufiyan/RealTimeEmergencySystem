@@ -11,7 +11,7 @@ function UserManagement() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://192.168.1.115:8000/type_users"); // Change URL as needed
+        const response = await axios.get("http://192.168.1.8:8000/type_users"); // Change URL as needed
         if (response.data && response.data.users) {
           setUsers(Object.values(response.data.users)); // Ensure users is an array
         } else {
@@ -33,7 +33,7 @@ const toggleStatus = async (id, currentStatus) => {
   
   try {
     // Call the API to update the status
-    await axios.post("http://192.168.1.115:8000/update-user-status", {
+    await axios.post("http://192.168.1.8:8000/update-user-status", {
       user_id: id,
       status: newStatus,
     });

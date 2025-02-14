@@ -13,7 +13,7 @@ function AgentMonitoring() {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await axios.get("http://192.168.1.9:8000/agents");
+        const response = await axios.get("http://192.168.1.8:8000/agents");
         if (response.data && response.data.agents) {
           setAgents(Object.values(response.data.agents));
         }

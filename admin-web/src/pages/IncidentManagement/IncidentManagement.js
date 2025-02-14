@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getDatabase, ref, get } from "firebase/database";
 import axios from "axios";
 import "./IncidentManagement.css";
 
@@ -10,10 +11,11 @@ function IncidentManagement() {
   const [agentMap, setAgentMap] = useState({});
   const [assignAgentMap, setAssignAgentMap] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [address, setAddress] = useState("Fetching address...");
 
   const fetchIncidents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.115:8000/incidents/");
+      const response = await axios.get("http://192.168.1.8:8000/incidents/");
       const data = response.data.incidents;
       const unresolvedIncidents = Object.values(data).filter(
         (incident) => incident.status === "Unresolved"
@@ -26,7 +28,7 @@ function IncidentManagement() {
 
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.115:8000/agents");
+      const response = await axios.get("http://192.168.1.8:8000/agents");
       const allAgents = Object.values(response.data.agents);
       setAssignAgents(allAgents);
       const assignAgentMap = allAgents.reduce((map, agent) => {
@@ -53,29 +55,88 @@ function IncidentManagement() {
     fetchIncidents();
     fetchAgents();
   }, []);
+  
+  const getAddress = async (latitude, longitude) => {
+    const API_KEY = "AIzaSyCuKvOfI3PU7PBDkAOK-3zFTiriJUOhyTQ"; // Replace with your API key
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
+
+    try {
+        const response = await axios.get(url);
+        if (response.data.status === "OK") {
+            const address = response.data.results[0]?.formatted_address;
+            return address || "Unknown Location";
+        } else {
+            console.error("Geocoding API Error:", response.data);
+            return "Unknown Location";
+        }
+    } catch (error) {
+        console.error("Error fetching address:", error);
+        return "Unknown Location";
+    }
+};
 
   const assignAgent = async (incidentId, agentId) => {
     try {
-      // Make a POST request to update the assigned agent in the database
-      await axios.post("http://192.168.1.115:8000/assign-agent", {
+      // Assign agent to incident
+      await axios.post("http://192.168.1.8:8000/assign-agent", {
         incident_id: incidentId,
-        assigned_agent: agentId, // Use agent_id here
+        assigned_agent: agentId,
       });
-
+  
       // Update agent status to "occupied"
-      await axios.post("http://192.168.1.115:8000/update-agent-status", {
-        agent_id: agentId, // Use agent_id here
+      await axios.post("http://192.168.1.8:8000/update-agent-status", {
+        agent_id: agentId,
         status: "occupied",
       });
+  
+      
+      const db = getDatabase();
+      const agentResponse = await get(ref(db, `users/${agentId}`));
+      if (agentResponse.exists()) {
+            const agentData = agentResponse.val();
+            const agentFcmToken = agentData?.FCM;
+            const agentName = agentData?.name;
+            const agentContact = agentData?.phone;
 
-      // Update the incidents state directly to reflect the assigned agent
+            console.log("Agent Data:", agentData);
+            console.log("Agent FCM Token:", agentFcmToken);
+            console.log("Agent Name:", agentName);
+            console.log("Agent Contact Number:", agentContact)
+        const incident = incidents.find((incident) => incident.id === incidentId);
+        const incidentAddress = await getAddress(incident.location.latitude, incident.location.longitude);
+        // Send notification through FastAPI
+        await axios.post("http://192.168.1.8:8000/send-notification-agent/", {
+          fcm_token: agentFcmToken,
+          itype: incident.type,
+          location: incidentAddress,
+        });
+        const userTokenResponse = await get(ref(db, `users/${incident.user_id}/FCM`));
+       
+        const userFcmToken = userTokenResponse.val();
+        console.log("User FCM Token:", userFcmToken);
+        console.log("Agent name:", agentResponse.name);
+        console.log("Agent Contact Number:", agentResponse.phone);
+        await axios.post("http://192.168.1.8:8000/send-notification-user/", {
+          fcm_token: userFcmToken,
+          agentName: agentName,
+          agentContact: agentContact,
+        });
+      } else {
+        console.error("FCM Token not found for agent:", agentId);
+      }
+  
+  
+  
+      console.log("Notification sent successfully.");
+  
+      // Update UI to reflect assignment
       setIncidents((prevIncidents) =>
         prevIncidents.map((incident) =>
           incident.id === incidentId ? { ...incident, assigned_agent: agentId } : incident
         )
       );
-
-      // Reload the agents list to reflect the agent status update
+  
+      // Reload agents to reflect updated status
       fetchAgents();
     } catch (error) {
       console.error("Error assigning agent:", error);
@@ -85,7 +146,7 @@ function IncidentManagement() {
   const markResolved = async (incidentId) => {
     try {
       // Make a POST request to update the status in the database
-      await axios.post("http://192.168.1.115:8000/update-status", {
+      await axios.post("http://192.168.1.8:8000/update-status", {
         incident_id: incidentId,
         status: "Resolved",
       });
@@ -103,7 +164,7 @@ function IncidentManagement() {
 
       // If the incident had an agent, update their status back to "online"
       if (assignedAgentId) {
-        await axios.post("http://192.168.1.115:8000/update-agent-status", {
+        await axios.post("http://192.168.1.8:8000/update-agent-status", {
           agent_id: assignedAgentId, // Use agent_id here
           status: "online",
         });
