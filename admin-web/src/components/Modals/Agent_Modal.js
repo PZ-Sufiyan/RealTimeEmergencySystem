@@ -3,6 +3,8 @@ import Modal from 'react-modal';
 import axios from 'axios';
 import './AgentModal.css';
 
+const uri = "https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
 const Agent_Modal = ({ isOpen, setIsOpen, setAgents }) => {
   const customStyles = {
     content: {
@@ -13,6 +15,7 @@ const Agent_Modal = ({ isOpen, setIsOpen, setAgents }) => {
       marginRight: '-50%',
       transform: 'translate(-50%, -50%)',
       width: '40%',
+      zIndex: 10000 ,  // Ensure it is above the table header
     },
   };
 
@@ -47,11 +50,11 @@ const Agent_Modal = ({ isOpen, setIsOpen, setAgents }) => {
         },
       };
 
-      const response = await axios.post('http://192.168.1.8:8000/signup', requestData);
+      const response = await axios.post(`${uri}/signup`, requestData);
       console.log('Agent added successfully:', response.data);
 
       // Fetch updated agent list
-      const updatedAgents = await axios.get("http://192.168.1.8:8000/agents");
+      const updatedAgents = await axios.get(`${uri}/agents`);
       setAgents(Object.values(updatedAgents.data.agents));
 
       // Reset form data and close modal

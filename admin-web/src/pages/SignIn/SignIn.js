@@ -3,6 +3,8 @@ import axios from "axios";
 import "./SignIn.css";
 import { requestPermission } from "../../firebase";
 
+const uri = "https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
 const SignIn = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +16,7 @@ const SignIn = ({ setIsAuthenticated }) => {
 
     try {
       console.log("Sending Sign-In Request...");
-      const response = await axios.post("http://192.168.1.8:8000/api/signin", {
+      const response = await axios.post(`${uri}/api/signin`, {
         email,
         password,
       });
@@ -27,7 +29,7 @@ const SignIn = ({ setIsAuthenticated }) => {
       console.log("Get FCM Token...", fcmToken);
       if (fcmToken) {
         console.log("Storing FCM Token:", fcmToken);
-        await axios.post("http://192.168.1.8:8000/api/store-fcm-token", {
+        await axios.post(`${uri}/api/store-fcm-token`, {
           email,
           fcmToken,
         });

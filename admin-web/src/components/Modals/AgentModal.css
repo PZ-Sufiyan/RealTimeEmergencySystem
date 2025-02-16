@@ -2,6 +2,7 @@
     width: 90%;
     margin: auto;
     margin-top: 2rem;
+    z-index: 10000;
 }
 
 .inputDiv{

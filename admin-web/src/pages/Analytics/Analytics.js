@@ -23,6 +23,8 @@ ChartJS.register(
   Legend
 );
 
+const uri = "https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
 const Analytics = () => {
   const [incidents, setIncidents] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -31,7 +33,7 @@ const Analytics = () => {
   // Fetch incident data
   const fetchIncidents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.8:8000/incidents");
+      const response = await axios.get(`${uri}/incidents`);
       const incidentData = response.data.incidents || {};
       setIncidents(Object.values(incidentData));
     } catch (error) {
@@ -42,7 +44,7 @@ const Analytics = () => {
   // Fetch agents data
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.8:8000/agents");
+      const response = await axios.get(`${uri}/agents`);
       const agentData = response.data.agents || {};
       setAgents(Object.values(agentData));
     } catch (error) {
@@ -181,7 +183,7 @@ const Analytics = () => {
         </div>
       </div>
 
-      <div className="analytics-section">
+      <div className="heatmap">
         <h2>Incident Locations Heatmap</h2>
         <div id="heatmap" className="heatmap-container"></div>
       </div>

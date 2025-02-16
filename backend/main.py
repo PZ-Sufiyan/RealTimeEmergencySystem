@@ -20,7 +20,7 @@ from twilio.rest import Client
 # Check if Firebase is already initialized
 def get_firebase_app():
     if not firebase_admin._apps:  # Check if Firebase is already initialized
-        cred = credentials.Certificate("C:\\Users\\sufik\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\firebase\\service-account.json")
+        cred = credentials.Certificate("C:\\Users\\shoai\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\firebase\\service-account.json")
         firebase_admin.initialize_app(cred, {
             'databaseURL': "https://elisasentry-default-rtdb.asia-southeast1.firebasedatabase.app"
         })

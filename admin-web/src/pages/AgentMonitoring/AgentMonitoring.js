@@ -3,6 +3,8 @@ import axios from "axios";
 import "./AgentMonitoring.css";
 import Agent_Modal from "../../components/Modals/Agent_Modal";
 
+const uri = "https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
 function AgentMonitoring() {
   const [agents, setAgents] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +15,7 @@ function AgentMonitoring() {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await axios.get("http://192.168.1.8:8000/agents");
+        const response = await axios.get(`${uri}/agents`);
         if (response.data && response.data.agents) {
           setAgents(Object.values(response.data.agents));
         }
@@ -74,50 +76,53 @@ function AgentMonitoring() {
       <h1>Agent Monitoring</h1>
       <div id="agent-map" className="map" style={{ height: "500px", width: "100%" }}></div>
       <div className="agent-list">
-        <div className="agentList-header">
-          <h2>Agent List</h2>
-          <button onClick={() => setIsOpen(true)} className="addAgent-btn">
-            New Agent
-          </button>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Location</th>
-              <th>View Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((agent) => (
-              <tr key={agent.id}>
-                <td>{agent.id}</td>
-                <td>{agent.name}</td>
-                <td>{agent.status}</td>
-                <td>{agent.email}</td>
-                <td>{agent.phone}</td>
-                <td>
-                  {agent.location.latitude && agent.location.longitude
-                    ? `${agent.location.latitude}, ${agent.location.longitude}`
-                    : "N/A"}
-                </td>
-                <td>
-                  <button
-                    className="view-button"
-                    onClick={() => setSelectedAgent(agent)}
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  <div className="agentList-header">
+    <h2>Agent List</h2>
+    <button onClick={() => setIsOpen(true)} className="addAgent-btn">
+      New Agent
+    </button>
+  </div>
+  <div className="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Location</th>
+          <th>View Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {agents.slice(0, 10).map((agent) => (
+          <tr key={agent.id}>
+            <td>{agent.id}</td>
+            <td>{agent.name}</td>
+            <td>{agent.status}</td>
+            <td>{agent.email}</td>
+            <td>{agent.phone}</td>
+            <td>
+              {agent.location.latitude && agent.location.longitude
+                ? `${agent.location.latitude}, ${agent.location.longitude}`
+                : "N/A"}
+            </td>
+            <td>
+              <button
+                className="view-button"
+                onClick={() => setSelectedAgent(agent)}
+              >
+                View Details
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
       {selectedAgent && (
         <div className="modal">
           <div className="modal-content">

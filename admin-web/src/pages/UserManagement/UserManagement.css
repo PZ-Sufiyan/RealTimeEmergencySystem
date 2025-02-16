@@ -5,6 +5,7 @@
 .user-management h1 {
   margin-bottom: 20px;
   text-align: center;
+  text-transform: uppercase;
 }
 
 /* Search Bar Styling */
@@ -37,11 +38,28 @@
   background-color: #2980b9;
 }
 
-/* Table Styling */
+/* Table Container with Scroll */
+.table-container {
+  margin-left: 10px;
+  margin-right: 10px;
+  max-height: 600px; /* Adjusted height to fit 10 rows */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+/* Sticky Table Header */
 .user-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  position: relative;
+}
+
+.user-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #2a3f54;
+  color: white;
+  z-index: 1;
 }
 
 .user-table th,
@@ -56,6 +74,20 @@
   color: white;
 }
 
+/* Ensuring Buttons Have Equal Width */
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.action-buttons button {
+  flex: 1; /* Ensures equal width */
+  padding: 5px 10px;
+}
+
+
+/* Status Button */
 .status-button {
   background-color: #1abc9c;
   color: white;
@@ -63,12 +95,13 @@
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  width: 100%;
 }
-
 .status-button:hover {
   background-color: #16a085;
 }
 
+/* View Button */
 .view-button {
   background-color: #e67e22;
   color: white;
@@ -76,6 +109,7 @@
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  width: 100%;
 }
 
 .view-button:hover {

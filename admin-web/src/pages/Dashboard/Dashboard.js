@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.css";
 
+const uri = "https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
 function Dashboard() {
   const [stats, setStats] = useState({ active: 0, resolved: 0, pending: 0 });
   const [incidents, setIncidents] = useState([]);
@@ -9,7 +11,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const response = await axios.get("http://192.168.1.8:8000/incidents/");
+        const response = await axios.get(`${uri}/incidents/`);
         if (response.data && response.data.incidents) {
           const allIncidents = Object.values(response.data.incidents);
 
@@ -80,44 +82,47 @@ function Dashboard() {
       </div>
       <div id="map" className="map" style={{ height: "500px", width: "100%" }}></div>
       <div className="recent-incidents">
-        <h2>Recent Incidents</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Type</th>
-              <th>Location</th>
-              <th>Time</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Assigned Agent</th>
+  <h2>Recent Incidents</h2>
+  <div className="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Time</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Assigned Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {incidents.length > 0 ? (
+          incidents.slice(0, incidents.length).map((incident, index) => (
+            <tr key={index}>
+              <td>{incident.id || "N/A"}</td>
+              <td>{incident.type || "N/A"}</td>
+              <td>
+                {incident.location
+                  ? `${incident.location.latitude}, ${incident.location.longitude}`
+                  : "N/A"}
+              </td>
+              <td>{incident.time || "N/A"}</td>
+              <td>{incident.priority || "N/A"}</td>
+              <td>{incident.status || "N/A"}</td>
+              <td>{incident.assigned_agent || "N/A"}</td>
             </tr>
-          </thead>
-          <tbody>
-            {incidents.length > 0 ? (
-              incidents.map((incident, index) => (
-                <tr key={index}>
-                  <td>{incident.id || "N/A"}</td>
-                  <td>{incident.type || "N/A"}</td>
-                  <td>
-                    {incident.location
-                      ? `${incident.location.latitude}, ${incident.location.longitude}`
-                      : "N/A"}
-                  </td>
-                  <td>{incident.time || "N/A"}</td>
-                  <td>{incident.priority || "N/A"}</td>
-                  <td>{incident.status || "N/A"}</td>
-                  <td>{incident.assigned_agent || "N/A"}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7">No incidents found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="7">No incidents found.</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
     </div>
   );
 }

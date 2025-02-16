@@ -13,9 +13,12 @@ function IncidentManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [address, setAddress] = useState("Fetching address...");
 
+
+   const uri ="https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
   const fetchIncidents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.8:8000/incidents/");
+      const response = await axios.get(`${uri}/incidents/`);
       const data = response.data.incidents;
       const unresolvedIncidents = Object.values(data).filter(
         (incident) => incident.status === "Unresolved"
@@ -28,7 +31,7 @@ function IncidentManagement() {
 
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://192.168.1.8:8000/agents");
+      const response = await axios.get(`${uri}/agents`);
       const allAgents = Object.values(response.data.agents);
       setAssignAgents(allAgents);
       const assignAgentMap = allAgents.reduce((map, agent) => {
@@ -78,13 +81,13 @@ function IncidentManagement() {
   const assignAgent = async (incidentId, agentId) => {
     try {
       // Assign agent to incident
-      await axios.post("http://192.168.1.8:8000/assign-agent", {
+      await axios.post(`${uri}/assign-agent`, {
         incident_id: incidentId,
         assigned_agent: agentId,
       });
   
       // Update agent status to "occupied"
-      await axios.post("http://192.168.1.8:8000/update-agent-status", {
+      await axios.post(`${uri}/update-agent-status`, {
         agent_id: agentId,
         status: "occupied",
       });
@@ -105,7 +108,7 @@ function IncidentManagement() {
         const incident = incidents.find((incident) => incident.id === incidentId);
         const incidentAddress = await getAddress(incident.location.latitude, incident.location.longitude);
         // Send notification through FastAPI
-        await axios.post("http://192.168.1.8:8000/send-notification-agent/", {
+        await axios.post(`${uri}/send-notification-agent/`, {
           fcm_token: agentFcmToken,
           itype: incident.type,
           location: incidentAddress,
@@ -116,7 +119,7 @@ function IncidentManagement() {
         console.log("User FCM Token:", userFcmToken);
         console.log("Agent name:", agentResponse.name);
         console.log("Agent Contact Number:", agentResponse.phone);
-        await axios.post("http://192.168.1.8:8000/send-notification-user/", {
+        await axios.post(`${uri}/send-notification-user/`, {
           fcm_token: userFcmToken,
           agentName: agentName,
           agentContact: agentContact,
@@ -146,7 +149,7 @@ function IncidentManagement() {
   const markResolved = async (incidentId) => {
     try {
       // Make a POST request to update the status in the database
-      await axios.post("http://192.168.1.8:8000/update-status", {
+      await axios.post(`${uri}/update-status`, {
         incident_id: incidentId,
         status: "Resolved",
       });
@@ -164,7 +167,7 @@ function IncidentManagement() {
 
       // If the incident had an agent, update their status back to "online"
       if (assignedAgentId) {
-        await axios.post("http://192.168.1.8:8000/update-agent-status", {
+        await axios.post(`${uri}/update-agent-status`, {
           agent_id: assignedAgentId, // Use agent_id here
           status: "online",
         });
@@ -185,78 +188,86 @@ function IncidentManagement() {
   );
 
   return (
+
     <div className="incident-management">
-      <h1>Incident Management</h1>
-      <div className="controls">
-        <input
-          type="text"
-          placeholder="Search incidents..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-box"
-        />
-      </div>
-      <table className="incident-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Location</th>
-            <th>Time</th>
-            <th>Priority</th>
-            <th>Assigned Agent</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredIncidents.map((incident) => (
-            <tr key={incident.id}>
-              <td>{incident.id}</td>
-              <td>{incident.type}</td>
-              <td>
-                Latitude: {incident.location.latitude}, Longitude: {incident.location.longitude}
-              </td>
-              <td>{new Date(incident.time).toLocaleString()}</td>
-              <td>{incident.priority}</td>
-              <td>
-                {incident.assigned_agent !== "N/A" ? (
-                  assignAgentMap[incident.assigned_agent] // Display the agent's name using the agent ID
-                ) : (
-                  <select
-                    onChange={(e) => assignAgent(incident.id, e.target.value)}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Assign Agent
-                    </option>
-                    {agents.length > 0 ? (
-                      agents.map((agent, index) => (
-                        <option key={index} value={agent.id}>
-                          {agent.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        No Agents Available
+  <h1>Incident Management</h1>
+  
+  <div className="controls">
+    <input
+      type="text"
+      placeholder="Search incidents..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="search-box"
+    />
+  </div>
+
+  <div className="table-container">
+    <table className="incident-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Time</th>
+          <th>Priority</th>
+          <th>Assigned Agent</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredIncidents.map((incident) => (
+          <tr key={incident.id}>
+            <td>{incident.id}</td>
+            <td>{incident.type}</td>
+            <td>
+              Latitude: {incident.location.latitude}, Longitude: {incident.location.longitude}
+            </td>
+            <td>{new Date(incident.time).toLocaleString()}</td>
+            <td>{incident.priority}</td>
+            <td>
+              {incident.assigned_agent !== "N/A" ? (
+                assignAgentMap[incident.assigned_agent]
+              ) : (
+                <select
+                  onChange={(e) => assignAgent(incident.id, e.target.value)}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Assign Agent
+                  </option>
+                  {agents.length > 0 ? (
+                    agents.map((agent, index) => (
+                      <option key={index} value={agent.id}>
+                        {agent.name}
                       </option>
-                    )}
-                  </select>
-                )}
-              </td>
-              <td>{incident.status}</td>
-              <td>
-                {incident.status === "Unresolved" && (
-                  <button className="resolve-button" onClick={() => markResolved(incident.id)}>
-                    Mark Resolved
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      No Agents Available
+                    </option>
+                  )}
+                </select>
+              )}
+            </td>
+            <td className={incident.status === "Resolved" ? "resolved-text" : "unresolved-text"}>
+              {incident.status}
+            </td>
+            <td>
+              {incident.status === "Unresolved" && (
+                <button className="resolve-button" onClick={() => markResolved(incident.id)}>
+                  Mark Resolved
+                </button>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
   );
 }
 

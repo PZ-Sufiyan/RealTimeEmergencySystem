@@ -1,35 +1,71 @@
 .incident-management {
   padding: 20px;
+  font-family: "Poppins", sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
 }
 
+/* Title Styling */
 .incident-management h1 {
   margin-bottom: 20px;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2a3f54;
 }
 
+/* Controls Section */
 .controls {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
+/* Modern Search Box */
 .search-box {
-  width: 300px;
-  padding: 10px;
+  width: 50%;
+  padding: 12px;
   border: 2px solid #3498db;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 16px;
   outline: none;
+  transition: 0.3s;
 }
 
+.search-box:focus {
+  border-color: #2a3f54;
+}
+
+/* Scrollable Table Container */
+.table-container {
+  max-height: 400px; /* Limits the height and adds a scrollbar */
+  overflow-y: auto;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Table Styling */
 .incident-table {
   width: 100%;
   border-collapse: collapse;
+  position: relative;
+}
+
+/* Sticky Table Header */
+.incident-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #2a3f54;
+  color: white;
+  z-index: 1;
 }
 
 .incident-table th,
 .incident-table td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 12px;
   text-align: left;
 }
 
@@ -38,24 +74,28 @@
   color: white;
 }
 
-.incident-table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
+/* Row Hover Effect */
 .incident-table tr:hover {
-  background-color: #f1f1f1;
+  background-color: rgba(52, 152, 219, 0.1);
+  transition: background 0.3s ease-in-out;
 }
 
 /* Assign Agent Dropdown */
 select {
-  padding: 5px;
+  padding: 6px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  cursor: pointer;
 }
 
-/* Resolved Text */
+/* Status Colors */
 .resolved-text {
   color: green;
+  font-weight: bold;
+}
+
+.unresolved-text {
+  color: red;
   font-weight: bold;
 }
 
@@ -64,11 +104,35 @@ select {
   background-color: #e74c3c;
   color: white;
   border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease-in-out;
 }
 
 .resolve-button:hover {
   background-color: #c0392b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-box {
+    width: 80%;
+  }
+
+  .table-container {
+    max-height: 300px;
+  }
+
+  .incident-table th,
+  .incident-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .resolve-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
 }

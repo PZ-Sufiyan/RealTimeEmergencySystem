@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, db, messaging
 
 
-cred = credentials.Certificate("C:\\Users\\sufik\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\elisasentry-firebase-adminsdk.json")
+cred = credentials.Certificate("C:\\Users\\shoai\\OneDrive\\Documents\\GitHub\\RealTimeEmergencySystem\\backend\\elisasentry-firebase-adminsdk.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://elisasentry-default-rtdb.asia-southeast1.firebasedatabase.app"
 })

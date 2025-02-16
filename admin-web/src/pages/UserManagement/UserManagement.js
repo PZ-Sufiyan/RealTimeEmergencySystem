@@ -7,11 +7,13 @@ function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const uri ="https://alert-system-fastapi-8749c7285c49.herokuapp.com";
+
   // Fetch users from Firebase on component mount
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://192.168.1.8:8000/type_users"); // Change URL as needed
+        const response = await axios.get(`${uri}/type_users`); // Change URL as needed
         if (response.data && response.data.users) {
           setUsers(Object.values(response.data.users)); // Ensure users is an array
         } else {
@@ -33,7 +35,7 @@ const toggleStatus = async (id, currentStatus) => {
   
   try {
     // Call the API to update the status
-    await axios.post("http://192.168.1.8:8000/update-user-status", {
+    await axios.post(`${uri}/update-user-status`, {
       user_id: id,
       status: newStatus,
     });
@@ -73,54 +75,55 @@ const toggleStatus = async (id, currentStatus) => {
         />
         <button className="search-button">Search</button>
       </div>
-
-      <table className="user-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Status</th>
-            <th>Action</th>
-            <th>View Details</th>
+<div className="table-container">
+  <table className="user-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Status</th>
+        <th>Action</th>
+        <th>View Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredUsers.length > 0 ? (
+        filteredUsers.slice(0, 10).map((user, index) => (
+          <tr key={index}>
+            <td>{user.id || "N/A"}</td>
+            <td>{user.name || "N/A"}</td>
+            <td>{user.email || "N/A"}</td>
+            <td>{user.phone || "N/A"}</td>
+            <td>{user.status || "inactive"}</td>
+            <td>
+              <button
+                className="status-button"
+                onClick={() => toggleStatus(user.id, user.status)}
+              >
+                {user.status === "active" ? "Deactivate" : "Activate"}
+              </button>
+            </td>
+            <td className="action-buttons">
+              <button
+                className="view-button"
+                onClick={() => setSelectedUser(user)}
+              >
+                View Details
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user, index) => (
-              <tr key={index}>
-                <td>{user.id || "N/A"}</td>
-                <td>{user.name || "N/A"}</td>
-                <td>{user.email || "N/A"}</td>
-                <td>{user.phone || "N/A"}</td>
-                <td>{user.status || "inactive"}</td>
-                <td>
-  <button
-    className="status-button"
-    onClick={() => toggleStatus(user.id, user.status)}
-  >
-    {user.status === "active" ? "Deactivate" : "Activate"}
-  </button>
-</td>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="7">No users found.</td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
 
-                <td>
-                  <button
-                    className="view-button"
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7">No users found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
 
       {/* Stylish User Details Popup */}
       {selectedUser && (
